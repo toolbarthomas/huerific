@@ -127,10 +127,12 @@ export class Huerific {
     return value != null && !isNaN(parseInt(value));
   }
 
+  // Ensures the defined value is within the Color value range.
   _end(value: number): number {
     return value > 360 ? this._end(value - 360) : value;
   }
 
+  // Ensures the defined value is within the Color value range.
   _start(value: number): number {
     return value < 0 ? this._start(360 + value) : value;
   }
