@@ -1,0 +1,22 @@
+{
+  "name": "huerific",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc --noEmit",
+    "predev": "npm run tsc",
+    "dev": "node node/esbuild.node.mjs",
+    "postdev": "node dist/index.js"
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.11.18",
+    "esbuild": "^0.16.14",
+    "tsc": "^2.0.4",
+    "typescript": "^4.9.4"
+  }
+}
