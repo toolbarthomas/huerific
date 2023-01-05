@@ -2,17 +2,19 @@ export type Hue = number;
 export type Saturation = number;
 export type Lightness = number;
 
+export type Levels = number;
+export type Context = number;
 export type Offset = number;
 export type Gradient = number[];
 export type Swatch = [Hue, Saturation, Lightness];
 
 export type HuerificOptions = {
-  context?: number;
-  levels?: number;
-  offset?: number;
+  context?: Context;
+  levels?: Levels;
+  offset?: Offset;
   plugins?: {
-    autoSaturate?: number;
-    hueShift?: number;
+    autoSaturate?: Saturation;
+    hueShift?: Hue;
   };
 };
 
@@ -28,17 +30,17 @@ export class Huerific {
   baseSaturation: Saturation;
 
   // Defines the base color from the context index value.
-  context: number;
+  context: Context;
 
   // Increment with the defined Hue value for each Swatch.
   hueShift: Hue;
 
   // The amount of Swatches to generate.
-  levels: number;
+  levels: Levels;
 
   // The minimum offset to use for the start and end value for each
   // color value.
-  offset: number;
+  offset: Offset;
 
   // Defines the default multiplier for the Swatch generation.
   ratio: number;
@@ -65,7 +67,7 @@ export class Huerific {
   }
 
   // Use the defined parameter as context value
-  _useContext(value?: any): number {
+  _useContext(value?: any): Context {
     return this._isColorValue(value) && (value as number) <= this.levels
       ? value
       : this.levels - Math.round(this.levels / this.ratio);
@@ -94,7 +96,7 @@ export class Huerific {
   }
 
   // Use the defined parameter as Gradient step.
-  _useLevels(value?: any): number {
+  _useLevels(value?: any): Levels {
     return this._isColorValue(value) ? value : 9;
   }
 
