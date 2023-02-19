@@ -149,7 +149,9 @@ export class Huerific {
 
       // Use the multiplier value if the HueShift plugin is enabled.
       const multiplier = this.hueShift ? this.context - i : 0;
-      const h: Hue = this._useHue(hue, this.hueShift ? multiplier : 0);
+      const h: Hue = Math.floor(
+        this._useHue(hue, this.hueShift ? multiplier : 0)
+      );
 
       let s = this._useSaturation(saturation);
 
