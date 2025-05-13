@@ -25,21 +25,6 @@ const colors = {
   teal: [172, 66, 50],
   yellow: [42, 95, 56],
 };
-// instance.generate(213, 94, 85).forEach((color) => {
-//   const [h, s, l] = color;
-
-//   console.log(
-//     `<div style="background-color: hsl(${h}, ${s}%, ${l}%) width: 100px; height: 100px;"></div>`
-//   );
-// });
-
-// instance.generate(213, 94, 56).forEach((color) => {
-//   const [h, s, l] = color;
-
-//   console.log(
-//     `<div style="background-color: hsl(${h}, ${s}%, ${l}%); width: 100px; height: 100px;"></div>`
-//   );
-// });
 
 Object.entries(colors).forEach(([key, value]) => {
   const [h, s, l] = value || [];

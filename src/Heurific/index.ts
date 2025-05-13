@@ -59,21 +59,34 @@ export class Huerific {
     this.baseSaturation = 100;
   }
 
-  // Use the autoSaturate value to adjust the first and last Gradient Swatch.
+  /**
+   * Use the autoSaturate value to adjust the first and last Gradient Swatch.
+   *
+   * @param value Optional saturation level to use.
+   */
   _useAutoSaturate(value?: any): Saturation {
     return this._isColorValue(value)
       ? (value as Saturation)
       : this.baseSaturation;
   }
 
-  // Use the defined parameter as context value
+  /**
+   * Use the defined parameter as context value.
+   *
+   * @param value Context value to parse
+   */
   _useContext(value?: any): Context {
     return this._isColorValue(value) && (value as number) <= this.levels
       ? value
       : this.levels - Math.round(this.levels / this.ratio);
   }
 
-  // Use the defined parameter as Hue value
+  /**
+   * Use the defined parameter as Hue value
+   *
+   * @param hue Hue value to parse.
+   * @param multiplier Additional hue offset radix value.
+   */
   _useHue(hue?: number, multiplier?: number): Hue {
     const h = this._isColorValue(hue) ? (hue as number) : 0;
     let xHue = h;
@@ -87,7 +100,11 @@ export class Huerific {
     return xHue;
   }
 
-  // Use the defined parameter as Hue value
+  /**
+   * Use the defined parameter as Hue shift value
+   *
+   * @param value Scales the hue from the given shift value
+   */
   _useHueShift(value?: number): Hue {
     const maxDelta = 360 / this.levels;
     const v = this._isColorValue(value) ? (value as number) : 0;
@@ -95,49 +112,85 @@ export class Huerific {
     return v && v < maxDelta ? v : 3;
   }
 
-  // Use the defined parameter as Gradient step.
+  /**
+   * Defines the amount of gradient steps or use the default instead.
+   *
+   * @param value Expected amount to use
+   */
   _useLevels(value?: any): Levels {
     return this._isColorValue(value) ? value : 9;
   }
 
-  // Use the defined parameter as Lightness value.
+  /**
+   * Use the defined parameter as Lightness value.
+   *
+   * @param value Lightness value to parse
+   */
   _useLightness(value?: any): Lightness | undefined {
     return this._isColorValue(value) ? (value as Lightness) : undefined;
   }
 
-  // Use the defined parameter as offset value.
+  /**
+   * Use the defined parameter as offset value.
+   *
+   * @param value Offset value to parse
+   */
   _useOffset(value?: any): Offset {
     return this._isColorValue(value) ? (value as Offset) : 3;
   }
 
-  // Use the defined parameter as Saturation value.
+  /**
+   * Use the defined parameter as Saturation value.
+   *
+   * @param value Saturation value to parse.
+   */
   _useSaturation(value?: any): Saturation {
     return this._isColorValue(value) && (value as number) <= this.baseSaturation
       ? value
       : this.baseSaturation;
   }
 
-  // Use the base swatch index where the AutoSaturate will start from.
+  /**
+   * Use the base swatch index where the AutoSaturate will start from.
+   */
   _useSaturationIndex(): number {
     return Math.round((this.levels || 1) / (this.context || 1) / this.ratio);
   }
 
-  // Check if the defined parameter is a valid color value.
+  /**
+   * Check if the defined parameter is a valid color value.
+   *
+   * @param value The value to validate.
+   */
   _isColorValue(value?: any): boolean {
     return value != null && !isNaN(parseInt(value));
   }
 
-  // Ensures the defined value is within the Color value range.
+  /**
+   * Ensures the defined value is within the Color value range.
+   *
+   * @param value The value to normalize within the maximum range.
+   */
   _end(value: number): number {
     return value > 360 ? this._end(value - 360) : value;
   }
 
-  // Ensures the defined value is within the Color value range.
+  /**
+   * Ensures the defined value is within the Color value range.
+   *
+   * @param value The value to normalize within the minimum range.
+   */
   _start(value: number): number {
     return value < 0 ? this._start(360 + value) : value;
   }
 
-  // Generates a palette with color swatches in Hue values.
+  /**
+   * Generates a palette with color swatches in Hue values.
+   *
+   * @param hue Defines the new Chart from the given hue value
+   * @param saturation The saturation range to use for the generated Chart.
+   * @param lightness The lightness range to use for the generated Chart.
+   */
   generate(hue: Hue, saturation?: Saturation, lightness?: Lightness): Swatch[] {
     const gradient =
       this._useLightness(lightness) !== undefined
@@ -171,7 +224,11 @@ export class Huerific {
     return swatches;
   }
 
-  // Generates a dynamic gradient with the defined lightness value.
+  /**
+   * Generates a dynamic gradient with the defined lightness value.
+   *
+   * @param lightness Defines the gradient within the defined lightness.
+   */
   generateDynamicGradient(lightness?: Lightness): Gradient {
     let index: number = 0;
 
@@ -206,7 +263,9 @@ export class Huerific {
     return gradient;
   }
 
-  // Generates a fixed gradient from min to max.
+  /**
+   * Generates a fixed gradient from min to max.
+   */
   generateFixedGradient(): Gradient {
     const delta = (100 - this.offset) / (this.levels - 1);
     let index = 0;
