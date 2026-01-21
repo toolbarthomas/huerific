@@ -73,8 +73,6 @@ export class Huerific {
   static useSaturation(value?: number, base?: number) {
     const saturation = base ?? Huerific.SATURATION;
 
-    console.log("USE", value, base);
-
     return Huerific.testColorValue(value) &&
       value !== undefined &&
       value < (base ?? saturation)
@@ -121,15 +119,13 @@ export class Huerific {
       ? this.generateDynamicGradient(lightness)
       : this.generateFixedGradient();
 
-    console.log("hue", saturation, lightness);
-
     const palette = Array.from<Palette>({ length: gradient.length });
 
     for (let i = 0; i < palette.length; i++) {
       const index = i + 1;
 
       const multiplier = this.hueShift ? this.context - index : 0;
-      const h: Hue = Math.floor(
+      const h = Math.floor(
         Huerific.useHue(hue, this.hueShift ? multiplier : 0, this.hueShift),
       );
 
@@ -143,8 +139,6 @@ export class Huerific {
       ) {
         s = Huerific.useSaturation(s - this.autoSaturate);
       }
-
-      console.log("H", s, this.autoSaturate);
 
       palette[i] = [h, s, gradient[i]];
     }

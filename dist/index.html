@@ -12,7 +12,7 @@
       context: 6,
       offset: 7,
       hueShift: 0.64,
-      // autoSaturate: 2.66,
+      autoSaturate: 2.66,
     });
 
     const colors = {
@@ -42,7 +42,6 @@
 
       for (let i = 0; i < props.colors; i++) {
         const hue = props.hue + (((360 / props.colors) * i))
-
 
         const chart = instance.generate(hue, props.saturation, props.lightness)
         const subfragment = document.createElement('div')
@@ -74,10 +73,10 @@
     {
       const options = {
         colors: 14,
-        hue: 2,
-        saturation: 37,
-        lightness: 50,
-        levels: 20,
+        hue: 4,
+        saturation: 46,
+        lightness: 18,
+        levels: 8,
       }
 
       Object.entries(options).forEach(([key, value]) =>
@@ -86,7 +85,7 @@
         target.value = options[key]
         target && target.addEventListener('change', (event) =>
         {
-          options[key] = event.target.value
+          options[key] = parseFloat(event.target.value) || 0
 
           render(options)
         });
