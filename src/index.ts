@@ -1,5 +1,18 @@
 import { Options, Palette } from "./_types";
 
+/**
+ * Huerific
+ *
+ * A utility for generating HSL color palettes based on hue,
+ * saturation, and calculated lightness gradients.
+ *
+ * The generator supports:
+ * - Fixed or dynamic lightness gradients
+ * - Context-aware hue shifting
+ * - Automatic saturation adjustment
+ *
+ * Output palettes are arrays of `[hue, saturation, lightness]`.
+ */
 export class Huerific {
   static RANGE = 1;
   static SCALE = 1 + 1 / (1 + 1 / 2);
@@ -13,6 +26,9 @@ export class Huerific {
   static SHIFT = 0;
   static STEP = Math.PI;
 
+  /**
+   * Checks whether a value can be interpreted as a numeric color value.
+   */
   static testColorValue(value?: any) {
     return (
       value != null &&
@@ -20,12 +36,19 @@ export class Huerific {
     );
   }
 
+  /**
+   * Resolves auto-saturation behavior.
+   * Returns the provided value if valid, otherwise a default step.
+   */
   static useAutoSaturate(value?: number) {
     return value === 0 || (value && Huerific.testColorValue(value))
       ? value
       : Huerific.STEP;
   }
 
+  /**
+   * Resolves the context index within the available levels.
+   */
   static useContext(value?: number, levels?: number) {
     const l = levels ?? Huerific.LEVELS;
 
@@ -34,6 +57,9 @@ export class Huerific {
       : l - Math.round(l / Huerific.SCALE);
   }
 
+  /**
+   * Computes a hue value with optional shifting and wrapping.
+   */
   static useHue(hue?: number, multiplier?: number, shift?: number) {
     const h = Huerific.testColorValue(hue) && hue ? hue : 0;
     let clamp = h;
@@ -47,6 +73,9 @@ export class Huerific {
     return clamp;
   }
 
+  /**
+   * Determines the hue shift step based on palette levels and angle.
+   */
   static useHueShift(value?: number, levels?: number, angle?: number) {
     const delta = (angle ?? Huerific.ANGLE) / (levels || Huerific.LEVELS);
     const shift = (Huerific.testColorValue(value) && value) || Huerific.SHIFT;
@@ -54,22 +83,34 @@ export class Huerific {
     return shift && shift < delta ? shift : Huerific.OFFSET;
   }
 
+  /**
+   * Resolves the lightness offset.
+   */
   static useOffset(value?: number) {
     return value === 0 || (value && Huerific.testColorValue(value))
       ? value
       : Huerific.OFFSET;
   }
 
+  /**
+   * Resolves the number of palette levels.
+   */
   static useLevels(value?: number) {
     return value === 0 || (value && Huerific.testColorValue(value))
       ? value
       : Huerific.LEVELS;
   }
 
+  /**
+   * Resolves a valid lightness value or returns undefined.
+   */
   static useLightness(value?: number) {
     return Huerific.testColorValue(value) ? (value ?? undefined) : undefined;
   }
 
+  /**
+   * Resolves saturation, clamping it to a base value.
+   */
   static useSaturation(value?: number, base?: number) {
     const saturation = base ?? Huerific.SATURATION;
 
@@ -80,10 +121,16 @@ export class Huerific {
       : saturation;
   }
 
+  /**
+   * Calculates the saturation adjustment index based on scale.
+   */
   static useSaturationIndex(levels?: number, context?: number) {
     return Math.round((levels || 1) / (context || 1) / Huerific.SCALE);
   }
 
+  /**
+   * Wraps a hue value from negative space into the valid angle range.
+   */
   static from(value?: number): number {
     if (value == null) {
       return 0;
@@ -92,6 +139,9 @@ export class Huerific {
     return value < 0 ? Huerific.from(Huerific.ANGLE + value) : value;
   }
 
+  /**
+   * Wraps a hue value exceeding the angle limit back into range.
+   */
   static to(value?: number): number {
     if (value == null) {
       return 0;
@@ -100,10 +150,19 @@ export class Huerific {
     return value > Huerific.ANGLE ? this.to(value - Huerific.ANGLE) : value;
   }
 
+  // Total number of palette levels
   levels: number;
+
+  // Context position within the palette
   context: number;
+
+  // Lightness offset
   offset: number;
+
+  // Auto-saturation adjustment amount
   autoSaturate: number;
+
+  // Hue shift step size
   hueShift: number;
 
   constructor(options?: Options) {
@@ -114,6 +173,13 @@ export class Huerific {
     this.hueShift = Huerific.useHueShift(options?.hueShift);
   }
 
+  /**
+   * Generates an HSL palette.
+   *
+   * @param hue Base hue value
+   * @param saturation Base saturation value
+   * @param lightness Optional fixed lightness anchor
+   */
   generate(hue: number, saturation: number, lightness?: number) {
     const gradient = Huerific.useLightness(lightness)
       ? this.generateDynamicGradient(lightness)
@@ -146,6 +212,9 @@ export class Huerific {
     return palette;
   }
 
+  /**
+   * Generates a dynamic lightness gradient centered on a given value.
+   */
   generateDynamicGradient(lightness?: number) {
     const l = Huerific.useLightness(lightness) || 0;
 
@@ -178,6 +247,9 @@ export class Huerific {
     return gradient;
   }
 
+  /**
+   * Generates a fixed descending lightness gradient.
+   */
   generateFixedGradient() {
     const delta =
       (Huerific.LIMIT - this.offset) / (this.levels - Huerific.RANGE);
