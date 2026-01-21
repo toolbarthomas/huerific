@@ -11,10 +11,8 @@
     const instance = new Huerific({
       context: 6,
       offset: 7,
-      plugins: {
-        hueShift: 0.64,
-        autoSaturate: 2.66,
-      },
+      hueShift: 0.64,
+      // autoSaturate: 2.66,
     });
 
     const colors = {
@@ -44,6 +42,7 @@
 
       for (let i = 0; i < props.colors; i++) {
         const hue = props.hue + (((360 / props.colors) * i))
+
 
         const chart = instance.generate(hue, props.saturation, props.lightness)
         const subfragment = document.createElement('div')

@@ -2,7 +2,9 @@ export type Options = {
   context: number;
   levels?: number;
   offset?: number;
-  saturation?: number;
+  autoSaturate?: number;
   scale?: number;
-  hue?: number;
+  hueShift?: number;
 };
+
+export type Palette = [number, number, number];

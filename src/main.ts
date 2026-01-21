@@ -1,6 +1,6 @@
-import { Options } from "./_types";
+import { Options, Palette } from "./_types";
 
-export class Heurific {
+export class Huerific {
   static RANGE = 1;
   static SCALE = 1 + 1 / (1 + 1 / 2);
 
@@ -8,8 +8,10 @@ export class Heurific {
   static OFFSET = 3;
   static SATURATION = 100;
 
+  static LIMIT = 100;
   static ANGLE = 360;
   static SHIFT = 0;
+  static STEP = Math.PI;
 
   static testColorValue(value?: any) {
     return (
@@ -19,60 +21,77 @@ export class Heurific {
   }
 
   static useAutoSaturate(value?: number) {
-    return value === 0 || (value && Heurific.testColorValue(value))
+    return value === 0 || (value && Huerific.testColorValue(value))
       ? value
-      : Heurific.SATURATION;
+      : Huerific.STEP;
   }
 
   static useContext(value?: number, levels?: number) {
-    const l = levels ?? Heurific.LEVELS;
+    const l = levels ?? Huerific.LEVELS;
 
-    return this.testColorValue(value) && value <= l
+    return this.testColorValue(value) && value !== undefined && value <= l
       ? value || 0
-      : l - Math.round(l / Heurific.SCALE);
+      : l - Math.round(l / Huerific.SCALE);
+  }
+
+  static useHue(hue?: number, multiplier?: number, shift?: number) {
+    const h = Huerific.testColorValue(hue) && hue ? hue : 0;
+    let clamp = h;
+
+    if (multiplier && !isNaN(multiplier)) {
+      clamp = h - (shift ?? Huerific.OFFSET) * multiplier;
+    }
+
+    clamp = clamp < 0 ? this.from(clamp) : this.to(clamp);
+
+    return clamp;
   }
 
   static useHueShift(value?: number, levels?: number, angle?: number) {
-    const delta = (angle ?? Heurific.ANGLE) / (levels || Heurific.LEVELS);
-    const shift = (Heurific.testColorValue(value) && value) || Heurific.SHIFT;
+    const delta = (angle ?? Huerific.ANGLE) / (levels || Huerific.LEVELS);
+    const shift = (Huerific.testColorValue(value) && value) || Huerific.SHIFT;
 
-    return shift && shift < delta ? shift : Heurific.OFFSET;
+    return shift && shift < delta ? shift : Huerific.OFFSET;
   }
 
   static useOffset(value?: number) {
-    return value === 0 || (value && Heurific.testColorValue(value))
+    return value === 0 || (value && Huerific.testColorValue(value))
       ? value
-      : Heurific.OFFSET;
+      : Huerific.OFFSET;
   }
 
   static useLevels(value?: number) {
-    return value === 0 || (value && Heurific.testColorValue(value))
+    return value === 0 || (value && Huerific.testColorValue(value))
       ? value
-      : Heurific.LEVELS;
+      : Huerific.LEVELS;
   }
 
   static useLightness(value?: number) {
-    return Heurific.testColorValue(value) ? (value ?? undefined) : undefined;
+    return Huerific.testColorValue(value) ? (value ?? undefined) : undefined;
   }
 
   static useSaturation(value?: number, base?: number) {
-    const saturation = base ?? Heurific.SATURATION;
+    const saturation = base ?? Huerific.SATURATION;
 
-    return Heurific.testColorValue(value) && value < (base ?? saturation)
+    console.log("USE", value, base);
+
+    return Huerific.testColorValue(value) &&
+      value !== undefined &&
+      value < (base ?? saturation)
       ? (value ?? saturation)
       : saturation;
   }
 
-  static useSaturationIndex(value?: number) {
-    return Math.round((levels || 1) / (value || 1) / Heurific.SCALE);
+  static useSaturationIndex(levels?: number, context?: number) {
+    return Math.round((levels || 1) / (context || 1) / Huerific.SCALE);
   }
 
-  static from(value?: number) {
+  static from(value?: number): number {
     if (value == null) {
       return 0;
     }
 
-    return value < 0 ? Heurific.from(Heurific.ANGLE + value) : value;
+    return value < 0 ? Huerific.from(Huerific.ANGLE + value) : value;
   }
 
   static to(value?: number): number {
@@ -80,8 +99,104 @@ export class Heurific {
       return 0;
     }
 
-    return value > Heurific.ANGLE ? this.to(value - Heurific.ANGLE) : value;
+    return value > Huerific.ANGLE ? this.to(value - Huerific.ANGLE) : value;
   }
 
-  constructor(options?: Options) {}
+  levels: number;
+  context: number;
+  offset: number;
+  autoSaturate: number;
+  hueShift: number;
+
+  constructor(options?: Options) {
+    this.levels = Huerific.useLevels(options?.levels);
+    this.context = Huerific.useContext(options?.context);
+    this.offset = Huerific.useOffset(options?.offset);
+    this.autoSaturate = Huerific.useAutoSaturate(options?.autoSaturate);
+    this.hueShift = Huerific.useHueShift(options?.hueShift);
+  }
+
+  generate(hue: number, saturation: number, lightness?: number) {
+    const gradient = Huerific.useLightness(lightness)
+      ? this.generateDynamicGradient(lightness)
+      : this.generateFixedGradient();
+
+    console.log("hue", saturation, lightness);
+
+    const palette = Array.from<Palette>({ length: gradient.length });
+
+    for (let i = 0; i < palette.length; i++) {
+      const index = i + 1;
+
+      const multiplier = this.hueShift ? this.context - index : 0;
+      const h: Hue = Math.floor(
+        Huerific.useHue(hue, this.hueShift ? multiplier : 0, this.hueShift),
+      );
+
+      let s = Huerific.useSaturation(saturation);
+
+      if (this.autoSaturate && index <= Huerific.useSaturationIndex()) {
+        s = Huerific.useSaturation(s + this.autoSaturate);
+      } else if (
+        this.autoSaturate &&
+        this.levels - index < Huerific.useAutoSaturate(this.autoSaturate)
+      ) {
+        s = Huerific.useSaturation(s - this.autoSaturate);
+      }
+
+      console.log("H", s, this.autoSaturate);
+
+      palette[i] = [h, s, gradient[i]];
+    }
+
+    return palette;
+  }
+
+  generateDynamicGradient(lightness?: number) {
+    const l = Huerific.useLightness(lightness) || 0;
+
+    const delta = (l - this.offset) / (this.levels - this.context);
+    const edge =
+      (Huerific.LIMIT - l - this.offset) / (this.context - Huerific.RANGE);
+    const gradient = Array.from<number>({ length: this.levels });
+
+    for (let i = 0; i < gradient.length; i++) {
+      const index = i + 1;
+      if (index < this.context) {
+        if (delta > edge) {
+          gradient[i] = l + edge * (this.context - index);
+
+          continue;
+        }
+
+        gradient[i] = l + delta * (this.context - index);
+
+        continue;
+      } else if (index === this.context) {
+        gradient[i] = l;
+
+        continue;
+      }
+
+      gradient[i] = l - delta * (index - this.context);
+    }
+
+    return gradient;
+  }
+
+  generateFixedGradient() {
+    const delta =
+      (Huerific.LIMIT - this.offset) / (this.levels - Huerific.RANGE);
+
+    let index = 0;
+
+    const gradient = Array.from<number>({ length: this.levels });
+
+    for (let index = gradient.length - 1; index >= 0; index--) {
+      const shade = delta * index ? delta * index : this.offset;
+      gradient[index] = Math.round(shade);
+    }
+
+    return gradient;
+  }
 }
