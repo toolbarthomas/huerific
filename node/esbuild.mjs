@@ -6,11 +6,17 @@ import { parse } from "@toolbarthomas/argumentje";
 
   const watch = argv.watch || argv.w;
 
+  const extension =
+    argv.format === "cjs" ? "cjs" : argv.format === "esm" ? "mjs" : "js";
+
   const options = {
     bundle: true,
     entryPoints: ["src/index.ts"],
     format: argv.format || "esm",
     keepNames: true,
+    outExtension: {
+      ".js": `.${extension}`,
+    },
     external: ["@toolbarthomas/argumentje"],
     minify: argv.m || argv.minify || false,
     outdir: "dist",
